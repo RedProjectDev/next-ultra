@@ -1,1 +1,1 @@
-export * as isMobileDevice from "./isMobileDevice"
+export {default as isMobileDevice} from "./isMobileDevice"
