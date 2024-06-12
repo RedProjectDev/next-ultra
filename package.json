@@ -1,0 +1,30 @@
+{
+	"name": "next-ultra",
+	"version": "1.0.0",
+	"main": "dist/index.js",
+	"types": "index.d.ts",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^20.14.2",
+		"@types/ua-parser-js": "^0.7.39",
+		"next": "^14.2.3",
+		"rimraf": "^5.0.7",
+		"typescript": "^5.4.5"
+	},
+	"peerDependencies": {
+		"next": "^14.2.3"
+	},
+	"dependencies": {
+		"ua-parser-js": "^1.0.38"
+	},
+	"scripts": {
+		"clean": "rimraf dist",
+		"prebuild": "npm run clean",
+		"build": "tsc"
+	},
+	"files": [
+		"dist",
+		"index.d.ts",
+		"utils.d.ts"
+	]
+}
