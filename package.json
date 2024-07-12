@@ -1,11 +1,13 @@
 {
 	"name": "next-ultra",
-	"version": "1.0.3",
+	"version": "1.1.0",
 	"main": "dist/index.js",
 	"types": "index.d.ts",
 	"license": "MIT",
 	"devDependencies": {
+		"@types/http-errors": "^2.0.4",
 		"@types/node": "^20.14.2",
+		"@types/qs": "^6.9.15",
 		"@types/ua-parser-js": "^0.7.39",
 		"next": "^14.2.3",
 		"rimraf": "^5.0.7",
@@ -15,12 +17,14 @@
 		"next": "^14.2.3"
 	},
 	"dependencies": {
+		"http-errors": "^2.0.0",
+		"qs": "^6.12.3",
 		"ua-parser-js": "^1.0.38"
 	},
 	"scripts": {
 		"clean": "rimraf dist",
-		"prebuild": "npm run clean",
-		"prepare": "npm run build",
+		"prebuild": "yarn clean",
+		"prepare": "yarn build",
 		"build": "tsc"
 	},
 	"files": [
