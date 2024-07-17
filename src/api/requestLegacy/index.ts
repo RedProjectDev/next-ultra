@@ -66,12 +66,17 @@ async function jsonRequest<T>(base: string, url: string, query?: object, options
 	let json
 	const ContentType = res.headers.get("content-type")
 	const status = res.status
+	let content = ""
 
 	try {
-		if (!ContentType?.includes("application/json")) throw createHttpError(500, "Not JSON", {"content-type": ContentType, content: await res.text(), status})
+		if (!ContentType?.includes("application/json")) content = await res.json()
 	} catch (error) {
-		throw createHttpError(500, "Not JSON & Error parse content", {"content-type": ContentType, status})
+		try {
+			if (!ContentType?.includes("application/json")) content = await res.text()
+		} catch (error) {}
 	}
+
+	if (!ContentType?.includes("application/json")) throw createHttpError(500, "Not JSON", {"content-type": ContentType, content, status})
 
 	try {
 		json = await res.json()
