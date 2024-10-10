@@ -67,18 +67,8 @@ async function jsonRequest<T>(base: string, url: string, query?: object, options
 		...rest,
 	} as RequestInit)
 
-	let json
-	const ContentType = res.headers.get("content-type")
 	const status = res.status
 	let content: string | object = ""
-
-	try {
-		if (!ContentType?.includes("application/json")) content = await res.json()
-	} catch (error) {
-		try {
-			if (!ContentType?.includes("application/json")) content = await res.text()
-		} catch (error) {}
-	}
 
 	switch (options.responseType) {
 		case "text":
