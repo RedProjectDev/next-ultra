@@ -39,62 +39,24 @@ export default async function requestLegacy<T = any>(
 	}
 }
 
-import createHttpError from "http-errors"
-import QueryString from "qs"
+import axios, {AxiosResponse} from "axios"
 
 async function jsonRequest<T>(base: string, url: string, query?: object, options: RequestOptions & {responseType?: "json" | "blob" | "text"} = {}): Promise<T> {
-	const u = new URL(base)
-	u.pathname = url
-	u.search = ""
-	u.hash = ""
+	const a = axios.create({
+		baseURL: base,
+		params: query,
+		responseType: options.responseType,
+		headers: options.headers as any,
+	})
 
-	const {body, headers, ...rest} = options
+	const {body, method = "get"} = options
 
-	u.search += QueryString.stringify(query).replace(/^\?/, "")
-
-	const trueHeaders = headers
-
-	const res = await fetch(u.toString(), {
-		...(body
-			? {
-					headers: {
-						...trueHeaders,
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(body),
-			  }
-			: {headers: trueHeaders}),
-		...rest,
-	} as RequestInit)
-
-	const status = res.status
-	let content: string | object = ""
-
-	switch (options.responseType) {
-		case "text":
-			try {
-				content = await res.text()
-			} catch (error) {
-				throw createHttpError(status, {error})
-			}
-			break
-		case "blob":
-			try {
-				content = await res.blob()
-			} catch (error) {
-				throw createHttpError(status, {error})
-			}
-			break
-		case "json":
-		default: {
-			try {
-				content = await res.json()
-			} catch (error) {
-				throw createHttpError(status, {error})
-			}
-			if (!res.ok) throw createHttpError(status, content)
-		}
+	let res: AxiosResponse<T>
+	if (options.body) {
+		res = await a[method as "post" | "patch" | "put"](url, body)
+	} else {
+		res = await a[method as "get" | "head" | "delete"](url)
 	}
 
-	return content as T
+	return res.data
 }
