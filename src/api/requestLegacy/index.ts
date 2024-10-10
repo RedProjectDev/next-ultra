@@ -9,7 +9,11 @@ interface RequestOptions extends RequestInitWithOut {
  * @description Only work with JSON data
  * @async
  */
-export default async function requestLegacy<T = any>(path: string, query?: {[x: string]: any}, options: RequestOptions = {}): Promise<T> {
+export default async function requestLegacy<T = any>(
+	path: string,
+	query?: {[x: string]: any},
+	options: RequestOptions & {responseType?: "json" | "blob" | "text"} = {}
+): Promise<T> {
 	if (typeof window !== "undefined") {
 		;("use client")
 		/* Client side */
@@ -38,7 +42,7 @@ export default async function requestLegacy<T = any>(path: string, query?: {[x: 
 import createHttpError from "http-errors"
 import QueryString from "qs"
 
-async function jsonRequest<T>(base: string, url: string, query?: object, options: RequestOptions = {}): Promise<T> {
+async function jsonRequest<T>(base: string, url: string, query?: object, options: RequestOptions & {responseType?: "json" | "blob" | "text"} = {}): Promise<T> {
 	const u = new URL(base)
 	u.pathname = url
 	u.search = ""
@@ -66,7 +70,7 @@ async function jsonRequest<T>(base: string, url: string, query?: object, options
 	let json
 	const ContentType = res.headers.get("content-type")
 	const status = res.status
-	let content = ""
+	let content: string | object = ""
 
 	try {
 		if (!ContentType?.includes("application/json")) content = await res.json()
@@ -76,14 +80,31 @@ async function jsonRequest<T>(base: string, url: string, query?: object, options
 		} catch (error) {}
 	}
 
-	if (!ContentType?.includes("application/json")) throw createHttpError(500, "Not JSON", {"content-type": ContentType, content, status})
-
-	try {
-		json = await res.json()
-	} catch (error) {
-		throw createHttpError(status, json)
+	switch (options.responseType) {
+		case "text":
+			try {
+				content = await res.text()
+			} catch (error) {
+				throw createHttpError(status, {error})
+			}
+			break
+		case "blob":
+			try {
+				content = await res.blob()
+			} catch (error) {
+				throw createHttpError(status, {error})
+			}
+			break
+		case "json":
+		default: {
+			try {
+				content = await res.json()
+			} catch (error) {
+				throw createHttpError(status, {error})
+			}
+			if (!res.ok) throw createHttpError(status, content)
+		}
 	}
-	if (!res.ok) throw createHttpError(status, json)
 
-	return json
+	return content as T
 }
